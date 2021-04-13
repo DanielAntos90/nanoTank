@@ -5,6 +5,7 @@ on:
     branches:
       - master
 
+
 jobs:
   auto-bump:
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
