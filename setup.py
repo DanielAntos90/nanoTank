@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
    name='NanoTank',
-   version='0.0.0',
+   version='0.1.0',
    description='aquarium controller',
    author='Daniel Antoš'
  #  author_email='foomail@foo.com',
