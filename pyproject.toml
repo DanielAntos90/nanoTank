@@ -1,0 +1,4 @@
+[tool.commitizen]
+version_files = [
+    "setup.py",
+]
