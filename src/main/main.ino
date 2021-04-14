@@ -34,18 +34,28 @@ struct LIGHT
 } 
 LED; // declare variables for store Light settings
 //___________________________________________________________________________________________________________________ end of LIGHT
+
+int fan_controlPin = 9;       // the pin where fan is
+const byte LED_Pin1 = 8;
+ 
+
 //================================================================================================================================================================================ LIGHT VALUE
 void Light_value()
 {
-LED.hour_ON=13;
+LED.hour_ON=11;
 LED.minute_ON=0;
 LED.hour_OFF=20;
-LED.minute_OFF=30;
+LED.minute_OFF=0;
 LED.dimming=30;
-LED.brightness=20; 
+LED.brightness=45; 
 }
-//============================================================================================================================================================================ END OF LIGHT VALUE
-
+//___________________________________________________________________________________________________________________  END OF LIGHT VALUE
+//================================================================================================================================================================================ BLUETOOTH VALUE
+#include <SoftwareSerial.h>
+SoftwareSerial bluetooth(2, 3); // RX, TX
+String readSerialString;
+String readBluetoothString;
+//___________________________________________________________________________________________________________________ end of BLUETOOTH VALUE
 //===================================================================================================================================================================================== SMARTUP
 void Smartup()
 { 
@@ -94,23 +104,32 @@ void setup()
 {
 //----------------------------------------------------------------------------------------------------------------------------------------------------- LED setup
 pinMode(LED_Pin, OUTPUT);
+pinMode(13, OUTPUT);
+digitalWrite(13,0);
 //_____________________________________________________________________________________________________________________ end of LED setup  
 Light_value();
 RTC.get(rtc,true); // read current time for smartup functions
-//Serial.begin(9600);
+Serial.begin(9600);
+bluetooth.begin(9600);
 //Change_time();
 Smartup();
+
+pinMode(fan_controlPin, OUTPUT);
+pinMode(LED_Pin1, OUTPUT);
 }
 //================================================================================================================================================================================ END OF SETUP
 //======================================================================================================================================================================================== LOOP 
 void loop()
 {  
-//  char cas[9];  
+/*char cas[9];  
   // zapíše do pole znaků cas hodnoty z rtc
-//  sprintf(cas, "%02d:%02d:%02d", rtc[2],rtc[1],rtc[0]);  
-//  Serial.println(cas); // odesle čas na ser. port  
+ sprintf(cas, "%02d:%02d:%02d", rtc[2],rtc[1],rtc[0]);  
+ Serial.println(cas); // odesle čas na ser. port  */
+Bluetooth_check();
 
-  
+if (rtc[2]==13 && rtc[1] == 15){digitalWrite(LED_Pin1,178);digitalWrite(fan_controlPin,220);}
+else if (rtc[2]==21 && rtc[1] == 0){digitalWrite(LED_Pin1,0);digitalWrite(fan_controlPin,0);}
+ 
   currentMillis = millis(); // save current millis
   if (rtc[2]==0 && rtc[1]==0)  {Light_value();}
   
@@ -141,8 +160,8 @@ void Change_time()
 {
   RTC.stop(); // stop the clock
   RTC.set(DS1307_SEC,0); // set new second
-  RTC.set(DS1307_MIN,54); // set new minutes
-  RTC.set(DS1307_HR,20); // set new hour
+  RTC.set(DS1307_MIN,00); // set new minutes
+  RTC.set(DS1307_HR,12); // set new hour
 /*  RTC.set(DS1307_DOW,current.day); //set new day
   RTC.set(DS1307_DATE,current.date); // set new date
   RTC.set(DS1307_MTH,current.month); // set new month
@@ -150,3 +169,59 @@ void Change_time()
 */   RTC.start(); // start the clock
 }
 //========================================================================================================================================================================== END OF CHANGE TIME
+//=================================================================================================================================================================================== BLUETOOTH
+void Bluetooth_check()
+{ 
+  
+while (Serial.available()> 0) {
+    delay(2);  //delay to allow byte to arrive in input buffer
+    char c = Serial.read();
+    readSerialString += c;
+ }  if (readSerialString.length() >0) {
+    //Serial.print("Requested command: ");
+    Serial.println(readSerialString);
+    bluetooth.println(readSerialString);
+    readSerialString="";
+    delay(1000);
+ }
+  
+  
+  
+  
+// Read HM10 respond.
+  while (bluetooth.available()> 0) {
+    delay(2);  //delay to allow byte to arrive in input buffer
+    char c = bluetooth.read();
+    readBluetoothString += c;
+  } if (readBluetoothString.length() >0) {
+    Serial.print("Android command: ");
+    Serial.println(readBluetoothString);
+   
+    if (readBluetoothString == "inputs"){
+      String ledStatus="";
+      if (LED.status==0){ledStatus="led off";}
+      else {ledStatus="led on";}
+      char timeDate[27];  
+      sprintf(timeDate,"%02d:%02d;%02d.%02d.%04d;%02d:%02d;%02d:%02d", rtc[2],rtc[1],rtc[4],rtc[5],rtc[6],LED.hour_ON,LED.minute_ON,LED.hour_OFF,LED.minute_OFF); 
+
+      BluetoothSend(String("ArduinoOutputs")+';'+timeDate+';'+LED.dimming+';'+LED.brightness+';'+ledStatus);}
+         
+    else if (readBluetoothString == "turn led on"){analogWrite(LED_Pin,LED.brightness_max);BluetoothSend("led on");}
+    else if (readBluetoothString == "turn led off"){analogWrite(LED_Pin,0);BluetoothSend("led off");}
+   
+    readBluetoothString="";
+    delay(1000);
+  }
+}  
+void BluetoothSend(String message)
+{ 
+    Serial.println(message+'\n');
+    delay(1000);
+    bluetooth.print(message+'\n');
+    delay(1000);
+}  
+// Send user input to HM10.
+
+
+//============================================================================================================================================================================ END OF BLUETOOTH
+
