@@ -1,3 +1,9 @@
+## 1.1.0 (2021-04-14)
+
+### Feat
+
+- add support for bluetooth module
+
 ## 1.0.0 (2021-04-14)
 
 ### BREAKING CHANGE
