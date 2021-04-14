@@ -1,6 +1,6 @@
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.2.5"
+version = "0.2.6"
 version_files = [
     "setup.cfg:version"
 ]
