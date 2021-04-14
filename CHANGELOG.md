@@ -1,3 +1,9 @@
+## 0.3.0 (2021-04-14)
+
+### Feat
+
+- update metadata in pyproject.toml
+
 ## 0.2.6 (2021-04-14)
 
 ### Fix
