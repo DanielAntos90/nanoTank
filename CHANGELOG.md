@@ -1,3 +1,10 @@
+## 1.1.1 (2022-03-28)
+
+### Fix
+
+- android control
+- android control
+
 ## 1.1.0 (2021-04-14)
 
 ### Feat
